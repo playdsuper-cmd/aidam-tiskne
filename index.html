@@ -1,0 +1,642 @@
+
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIDAM TISKNE VE 3D</title>
+
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#f4f3ef,#111311);
+  --panel: light-dark(#fff,#1b1e1b);
+  --ink: light-dark(#20231f,#f1f3ed);
+  --muted: light-dark(#6b7168,#a5ada1);
+  --line: light-dark(#dedfd7,#343a33);
+  --accent: #b9f36a;
+  --shadow: 0 18px 55px #0000000d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+#app { min-height: 100vh; }
+
+header {
+  height: 78px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(20px,6vw,88px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-weight: 850;
+  letter-spacing: -.7px;
+  font-size: 21px;
+}
+
+.logo {
+  width: 34px;
+  height: 34px;
+  background: var(--accent);
+  color: #1b2415;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.topnote { font-size: 13px; color: var(--muted); }
+
+main {
+  max-width: 1160px;
+  margin: auto;
+  padding: 58px 24px 80px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap: 45px;
+  align-items: center;
+  margin-bottom: 42px;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: light-dark(#557d2c,#b9f36a);
+}
+
+h1 {
+  font-size: clamp(42px,6vw,68px);
+  letter-spacing: -3.5px;
+  line-height: 1.02;
+  margin: 14px 0 20px;
+  font-weight: 850;
+}
+
+.hero p {
+  color: var(--muted);
+  font-size: 17px;
+  max-width: 520px;
+}
+
+.art {
+  height: 240px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--panel);
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.art:before, .art:after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+
+.art:after { width: 230px; height: 230px; }
+
+.cube {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  transform: rotate(-30deg) skew(5deg,5deg);
+  background: var(--accent);
+  box-shadow: 24px 24px 0 #8fca49,48px 48px 0 #63962c;
+  z-index: 1;
+}
+
+.cube:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -28px;
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  border-bottom: 28px solid light-dark(#e0ffb6,#d7ffa2);
+}
+
+.cube:after {
+  content: "";
+  position: absolute;
+  right: -28px;
+  top: 0;
+  border-top: 50px solid transparent;
+  border-bottom: 50px solid transparent;
+  border-left: 28px solid #83bd3e;
+}
+
+.artlabel {
+  position: absolute;
+  bottom: 17px;
+  left: 20px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 310px;
+  gap: 24px;
+  align-items: start;
+}
+
+.panel, .asidecard {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.panel { padding: clamp(22px,4vw,38px); }
+
+.step {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.stepnum {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.step h2 {
+  font-size: 21px;
+  margin: 0;
+  letter-spacing: -.6px;
+}
+
+.step p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 3px 0 0;
+}
+
+.field { margin: 0 0 22px; }
+
+label, .legend {
+  display: block;
+  font-size: 13px;
+  font-weight: 750;
+  margin-bottom: 8px;
+}
+
+.optional { font-weight: 450; color: var(--muted); }
+
+input, textarea, select {
+  font: inherit;
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #8bc94a;
+  box-shadow: 0 0 0 3px #b9f36a25;
+}
+
+textarea { resize: vertical; min-height: 118px; }
+::placeholder { color: var(--muted); }
+
+.choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.choice label {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  cursor: pointer;
+}
+
+.choice input {
+  width: auto;
+  margin-top: 5px;
+  accent-color: #7eaf3d;
+}
+
+.choice strong { display: block; font-size: 14px; }
+
+.choice small {
+  display: block;
+  color: var(--muted);
+  font-weight: 450;
+  margin-top: 2px;
+}
+
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.hint { font-size: 12px; color: var(--muted); margin-top: 7px; }
+
+.check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 450;
+}
+
+.check input {
+  width: auto;
+  margin-top: 4px;
+  accent-color: #8bc94a;
+}
+
+.submit {
+  border: 0;
+  background: var(--accent);
+  color: #172110;
+  border-radius: 12px;
+  padding: 15px 18px;
+  font-size: 15px;
+  font-weight: 850;
+  width: 100%;
+  cursor: pointer;
+  transition: transform .15s,filter .15s;
+}
+
+.submit:hover {
+  filter: brightness(.96);
+  transform: translateY(-1px);
+}
+
+.status {
+  display: none;
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 13px;
+}
+
+.asidecard { padding: 24px; margin-bottom: 14px; }
+.asidecard h3 { font-size: 16px; margin: 0 0 17px; }
+
+.benefit {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.benefit i {
+  font-style: normal;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.benefit b { display: block; font-size: 13px; }
+.benefit span { font-size: 12px; color: var(--muted); }
+
+.pill {
+  display: inline-block;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 5px 9px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+footer {
+  max-width: 1160px;
+  padding: 20px 24px 32px;
+  margin: auto;
+  color: var(--muted);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid var(--line);
+}
+
+@media(max-width:800px) {
+  .hero { grid-template-columns: 1fr; gap: 20px; }
+  .art { height: 180px; }
+  .layout { grid-template-columns: 1fr; }
+  .hero h1 { letter-spacing: -2.5px; }
+  .topnote { display: none; }
+}
+
+@media(max-width:480px) {
+  main { padding: 36px 14px 48px; }
+  .two, .choice { grid-template-columns: 1fr; }
+  .panel { padding: 20px; }
+  header { padding: 0 16px; }
+  footer { flex-direction: column; }
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+
+<header>
+  <div class="brand">
+    <span class="logo">⬡</span>
+    AIDAM TISKNE VE 3D
+  </div>
+  <div class="topnote">OD NÁPADU K HOTOVÉMU VÝTISKU</div>
+</header>
+
+<main>
+<section class="hero">
+  <div>
+    <div class="eyebrow">Zakázkový 3D tisk</div>
+    <h1>Tvůj nápad.<br>Ve třech rozměrech.</h1>
+    <p>Pošli nám model nebo popiš, co potřebuješ vytvořit. Ozveme se s možnostmi, cenou a odhadovaným termínem.</p>
+  </div>
+
+  <div class="art" aria-label="Abstraktní ilustrace 3D objektu">
+    <div class="cube"></div>
+    <div class="artlabel">DESIGN · PRINT · REPEAT</div>
+  </div>
+</section>
+
+<div class="layout">
+
+<section class="panel">
+  <div class="step">
+    <div class="stepnum">01</div>
+    <div>
+      <h2>Co pro tebe vytiskneme?</h2>
+      <p>Vyplň pár detailů o své představě.</p>
+    </div>
+  </div>
+
+  <form id="orderForm">
+
+    <div class="field">
+      <span class="legend">Typ objednávky *</span>
+      <div class="choice">
+        <label>
+          <input type="radio" name="kind" value="Vytisknout hotový model" checked>
+          <span>
+            <strong>Mám hotový model</strong>
+            <small>Odkaz nebo soubor modelu</small>
+          </span>
+        </label>
+
+        <label>
+          <input type="radio" name="kind" value="Vymodelovat podle popisu">
+          <span>
+            <strong>Chci vymodelovat</strong>
+            <small>Mám nápad nebo náčrt</small>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="modelUrl">Odkaz na 3D model <span class="optional">(pokud máš)</span></label>
+      <input id="modelUrl" type="url" placeholder="https://printables.com/...">
+      <div class="hint">Např. Printables, Thingiverse, MakerWorld nebo odkaz na soubor.</div>
+    </div>
+
+    <div class="field">
+      <label for="description">Popis objednávky <span class="optional">(volitelné)</span></label>
+      <textarea id="description" placeholder="Co chceš vytisknout nebo vymodelovat? K čemu to bude sloužit? Přibližné rozměry, detaily…"></textarea>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="size">Přibližná velikost</label>
+        <input id="size" placeholder="např. 8 × 5 × 3 cm">
+      </div>
+
+      <div class="field">
+        <label for="quantity">Přesný počet kusů *</label>
+        <input id="quantity" type="number" min="1" step="1" value="1" required placeholder="Zadej počet kusů">
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="material">Materiál <span class="optional">(volitelné)</span></label>
+        <select id="material">
+          <option>Nevím, poraďte mi</option>
+          <option>PLA – běžné použití</option>
+          <option>PETG – odolnější</option>
+          <option>TPU – pružný</option>
+          <option>Jiný / dle domluvy</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="color">Barva <span class="optional">(volitelné)</span></label>
+        <input id="color" placeholder="např. černá, bílá…">
+      </div>
+    </div>
+
+    <div class="step" style="margin-top:10px;margin-bottom:22px">
+      <div class="stepnum">02</div>
+      <div>
+        <h2>Kam se ozvat?</h2>
+        <p>Pošleme ti nabídku a domluvíme detaily.</p>
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="name">Jméno *</label>
+        <input id="name" required autocomplete="name" placeholder="Tvoje jméno">
+      </div>
+
+      <div class="field">
+        <label for="email">E-mail *</label>
+        <input id="email" required type="email" autocomplete="email" placeholder="ty@example.cz">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="extra">Další poznámka <span class="optional">(volitelné)</span></label>
+      <textarea id="extra" style="min-height:76px" placeholder="Termín, účel, případné další požadavky…"></textarea>
+    </div>
+
+    <label class="check">
+      <input id="consent" type="checkbox" required>
+      <span>Souhlasím s použitím uvedených údajů pro vyřízení této poptávky. *</span>
+    </label>
+
+    <p class="hint" style="margin:10px 0 18px">
+      Odesláním poptávky ještě nevzniká závazná objednávka.
+    </p>
+
+    <button class="submit" type="submit">
+      Připravit poptávku <span aria-hidden="true">↗</span>
+    </button>
+
+    <div id="status" class="status" role="status"></div>
+  </form>
+</section>
+
+<aside>
+  <div class="asidecard">
+    <span class="pill">JAK TO FUNGUJE</span>
+    <h3>Od zadání k výtisku</h3>
+
+    <div class="benefit">
+      <i>↗</i>
+      <div>
+        <b>1. Pošli zadání</b>
+        <span>Odkaz nebo popis vlastního návrhu.</span>
+      </div>
+    </div>
+
+    <div class="benefit">
+      <i>◷</i>
+      <div>
+        <b>2. Dostaneš nabídku</b>
+        <span>Upřesníme cenu, materiál a termín.</span>
+      </div>
+    </div>
+
+    <div class="benefit">
+      <i>⬡</i>
+      <div>
+        <b>3. Tiskneme</b>
+        <span>Po odsouhlasení se pustíme do práce.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="asidecard">
+    <h3>Nejsi si jistý modelem?</h3>
+    <p class="note">Nevadí. Popiš účel, přibližnou velikost a jak má věc vypadat. Společně doladíme další postup.</p>
+  </div>
+</aside>
+
+</div>
+</main>
+
+<footer>
+  <span>© AIDAM TISKNE VE 3D · Zakázkový 3D tisk</span>
+  <span>Každý dobrý nápad si zaslouží prototyp.</span>
+</footer>
+
+</div>
+
+<script>
+const form = document.getElementById('orderForm');
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  if (!form.reportValidity()) return;
+
+  const val = id => document.getElementById(id).value.trim();
+  const kind = new FormData(form).get('kind');
+  const quantity = Number(val('quantity'));
+
+  // Pojistka: počet musí být kladné celé číslo.
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    document.getElementById('quantity').setCustomValidity(
+      'Zadej kladný celý počet kusů.'
+    );
+    document.getElementById('quantity').reportValidity();
+    return;
+  }
+
+  document.getElementById('quantity').setCustomValidity('');
+
+  const subject = 'Nová 3D poptávka – ' + val('name');
+
+  const description = val('description')
+    || 'Neuveden – zákazník dodal odkaz na model';
+
+  const body = [
+    'NOVÁ POPTÁVKA NA 3D TISK',
+    '',
+    'Typ: ' + kind,
+    'Jméno: ' + val('name'),
+    'E-mail zákazníka: ' + val('email'),
+    'Odkaz na model: ' + (val('modelUrl') || 'Neuveden'),
+    'Popis: ' + description,
+    'Velikost: ' + (val('size') || 'Neuvedena'),
+    'Přesný počet kusů: ' + quantity,
+    'Materiál: ' + val('material'),
+    'Barva: ' + (val('color') || 'Neuvedena'),
+    'Další poznámka: ' + (val('extra') || 'Žádná'),
+    '',
+    '---',
+    'Odesláno z formuláře AIDAM TISKNE VE 3D'
+  ].join('\n');
+
+  const status = document.getElementById('status');
+  status.style.display = 'block';
+  status.textContent =
+    'Otevírám e-mail s vyplněnou poptávkou. Pro automatické odeslání bez potvrzení je potřeba propojit aplikaci s e-mailovou službou a nastavit ověřeného odesílatele.';
+
+  window.location.href =
+    'mailto:playd.super@gmail.com?subject=' +
+    encodeURIComponent(subject) +
+    '&body=' +
+    encodeURIComponent(body);
+});
+
+// Při opravě neplatného počtu zrušíme předchozí chybu.
+document.getElementById('quantity').addEventListener('input', function() {
+  this.setCustomValidity('');
+});
+</script>
+
+</body>
+</html>
